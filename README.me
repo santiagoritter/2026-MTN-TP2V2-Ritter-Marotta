@@ -1,0 +1,98 @@
+# Registro de Desarrollo - Sistema HogarPay
+
+Este documento contiene el historial de instrucciones (prompts) y correcciones utilizadas durante la arquitectura, diseño y desarrollo del sistema web **HogarPay**.  
+El objetivo es registrar cómo fue evolucionando el proyecto desde la idea inicial hasta las correcciones finales.
+
+---
+
+# Fases del Proyecto
+
+## 1. Inicialización y Estructura Base
+
+En esta etapa se generó la base del sistema y se organizó la estructura del proyecto.
+
+**Prompt utilizado:**
+
+> `[Contexto provisto: Archivo Escenario4_hogarpay.html y email simulado de HogarPay]`  
+> "haceme el sistema"
+
+**Prompt utilizado:**
+
+> "Separale todo a archivos"
+
+**Resultado:**
+
+- Creación de la estructura inicial del proyecto
+- Separación de archivos HTML, CSS y JavaScript
+- Organización del proyecto para facilitar mantenimiento y escalabilidad
+
+---
+
+## 2. Funcionalidades Core, Base de Datos y Estética
+
+En esta fase se agregaron las funcionalidades principales del sistema.
+
+**Prompt utilizado:**
+
+> "hace la parte de la base de datos que almacene usuarios y que te puedas registrar y guardar tu cuenta y loguearte + además de que le cambies la estética a una más profesional + que los comprobantes los guarde y los puedas descargar en pdf + El sistema debe recuperarse de una caída en menos de 5 minutos. esto no hace falta ya que no tiene sentido ya que esto tiene que ver con el soporte del server"
+
+**Prompt utilizado:**
+
+> "tambien quier poder cambiar de donde soy y en el log in me aparezca una opcion d eno estoy registrado y que de ahi me pregunte todo y lo guarde en una database y que tenga un servidor con una api que conecte la base de datos con la pagina web"
+
+**Resultado:**
+
+- Implementación del sistema de registro de usuarios
+- Sistema de login
+- Base de datos para almacenar información de usuarios
+- Generación y descarga de comprobantes en PDF
+- Mejora de la estética del sistema
+- Implementación de servidor con API para conectar frontend y base de datos
+
+---
+
+## 3. Iteraciones de Generación
+
+Durante el desarrollo se realizaron múltiples iteraciones para mejorar el sistema.
+
+**Prompts utilizados:**
+
+> "Continue: 'Continue to iterate?'" *(Iteración 1)*  
+> "Continue: 'Continue to iterate?'" *(Iteración 2)*  
+> "Continue: 'Continue to iterate?'" *(Iteración 3)*
+
+**Resultado:**
+
+- Ajustes en la estructura del código
+- Mejor organización de funciones
+- Mejor integración entre frontend y backend
+
+---
+
+## 4. Correcciones y Refinamientos (Bugfixing)
+
+En esta fase se solucionaron errores detectados durante las pruebas del sistema.
+
+**Prompts utilizados:**
+
+> "corregí el error de CORS que salta en la consola del navegador cuando el frontend intenta mandarle los datos de registro a la API"
+
+> "el botón de descargar PDF está cortando la tabla de los comprobantes a la mitad, ajustá el formato para que todo el contenido entre bien en una hoja A4"
+
+> "mejorá la validación del log in: si el usuario pone mal la contraseña o el mail no existe, hacé que aparezca un mensaje de error en rojo en el mismo formulario en vez de recargar la página entera"
+
+> "arreglá la opción de cambiar de dónde soy. Cuando selecciono una ubicación nueva, la página se actualiza pero el cambio no se está guardando en la base de datos a través de la API"
+
+**Resultado:**
+
+- Corrección de error de CORS entre frontend y backend
+- Ajuste del formato del PDF para evitar cortes en la tabla
+- Mejora en la validación de login con mensajes de error en el formulario
+- Corrección del guardado de ubicación del usuario en la base de datos
+
+---
+
+# Estado Final del Sistema
+
+El sistema HogarPay cuenta actualmente con:
+com
