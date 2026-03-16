@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>HogarPay — Pagá tus servicios en un solo lugar</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <!-- jsPDF para generación de PDF real -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════
+     AUTH SCREEN
+════════════════════════════════════════════════════════ -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-icon">🏠</div>
+      <h1>HogarPay</h1>
+      <p>Pagá luz, agua y gas en un solo lugar</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Iniciar sesión</button>
+      <button class="auth-tab"        onclick="switchAuthTab('register')">Crear cuenta</button>
+    </div>
+
+    <!-- FORM LOGIN -->
+    <div id="auth-login-form" class="auth-form">
+      <div class="auth-error" id="login-error"></div>
+      <div class="auth-field">
+        <label>Email</label>
+        <input id="login-email" type="email" placeholder="tu@email.com" autocomplete="email"/>
+      </div>
+      <div class="auth-field">
+        <label>Contraseña</label>
+        <input id="login-password" type="password" placeholder="••••••••"
+               onkeydown="if(event.key==='Enter') handleLogin()"/>
+      </div>
+      <button class="btn-auth btn-auth-primary" onclick="handleLogin()">
+        Iniciar sesión →
+      </button>
+      <div style="text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;padding:12px 0;border-top:1px solid rgba(255,255,255,.08)">
+        ¿No tenés cuenta?
+        <a href="#" onclick="switchAuthTab('register');return false"
+           style="color:#a5b4fc;text-decoration:none;font-weight:700;font-size:14px">
+           Registrate gratis →
+        </a>
+      </div>
+    </div>
+
+    <!-- FORM REGISTRO -->
+    <div id="auth-register-form" class="auth-form" style="display:none">
+      <div class="auth-error" id="reg-error"></div>
+      <div class="auth-grid2">
+        <div class="auth-field">
+          <label>Nombre completo *</label>
+          <input id="reg-name" type="text" placeholder="Juan García"/>
+        </div>
+        <div class="auth-field">
+          <label>Email *</label>
+          <input id="reg-email" type="email" placeholder="tu@email.com"/>
+        </div>
+        <div class="auth-field">
+          <label>Contraseña * (mín. 6 car.)</label>
+          <input id="reg-password" type="password" placeholder="••••••••"/>
+        </div>
+        <div class="auth-field">
+          <label>Confirmar contraseña *</label>
+          <input id="reg-confirm" type="password" placeholder="••••••••"/>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid rgba(255,255,255,.08);padding-top:14px;margin-top:2px">
+        <div style="font-size:11px;color:#64748b;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px">
+          Datos opcionales
+        </div>
+        <div class="auth-grid2">
+          <div class="auth-field">
+            <label>Alias en el ranking</label>
+            <input id="reg-alias" placeholder="Ej: Tigre⚡ (generado auto)"/>
+          </div>
+          <div class="auth-field">
+            <label>Barrio / Zona</label>
+            <input id="reg-zone" placeholder="Ej: Palermo, CABA"/>
+          </div>
+          <div class="auth-field">
+            <label>⚡ N° cliente Luz (EDESUR)</label>
+            <input id="reg-nc-luz" placeholder="456-7890-2"/>
+          </div>
+          <div class="auth-field">
+            <label>💧 N° cliente Agua (AySA)</label>
+            <input id="reg-nc-agua" placeholder="AGU-112233"/>
+          </div>
+        </div>
+        <div class="auth-field" style="margin-top:12px">
+          <label>🔥 N° cliente Gas (Metrogas)</label>
+          <input id="reg-nc-gas" placeholder="GAS-998877"/>
+        </div>
+      </div>
+
+      <button class="btn-auth btn-auth-primary" onclick="handleRegister()" style="margin-top:4px">
+        Crear cuenta gratis →
+      </button>
+      <div style="text-align:center;font-size:12px;color:#475569">
+        ¿Ya tenés cuenta?
+        <a href="#" onclick="switchAuthTab('login');return false"
+           style="color:#a5b4fc;text-decoration:none;font-weight:700">Iniciá sesión</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     APP SCREEN
+════════════════════════════════════════════════════════ -->
+<div id="app-screen">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="brand-icon">🏠</div>
+      <span class="brand-name">HogarPay</span>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-greeting">
+        Hola, <b id="topbar-greeting-name">—</b>
+      </div>
+      <div class="user-avatar" id="topbar-initials">—</div>
+      <button class="btn-logout" onclick="handleLogout()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">Menú</div>
+    <button class="nav-item active" onclick="goTab('inicio')">
+      <span class="nav-icon">🏠</span> Inicio
+    </button>
+    <button class="nav-item" onclick="goTab('pagar')">
+      <span class="nav-icon">💳</span> Pagar servicios
+    </button>
+    <button class="nav-item" onclick="goTab('comprobantes')">
+      <span class="nav-icon">📄</span> Comprobantes
+    </button>
+    <button class="nav-item" onclick="goTab('ranking')">
+      <span class="nav-icon">🏆</span> Ranking barrial
+    </button>
+
+    <div class="sidebar-section" style="margin-top:8px">Cuenta</div>
+    <button class="nav-item" onclick="goTab('config')">
+      <span class="nav-icon">⚙️</span> Mi cuenta
+    </button>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="sidebar-avatar-initials">—</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name"  id="sidebar-user-name">—</div>
+          <div class="sidebar-user-email" id="sidebar-user-email">—</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+
+    <!-- ── INICIO ── -->
+    <div class="page active" id="page-inicio">
+      <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>Resumen de tus servicios del hogar este mes</p>
+      </div>
+
+      <div class="alert alert-warn" id="alert-gas" style="display:none">
+        <span style="font-size:18px">⚠️</span>
+        <div>
+          <b>Consumo de gas inusualmente alto</b> —
+          Tu consumo es un <span id="gas-pct">0</span>% mayor al mes anterior.
+          Revisá si hay pérdidas o artefactos encendidos.
+          <a href="#" onclick="goTab('config');return false"
+             style="color:inherit;text-decoration:underline;margin-left:6px">Configurar alertas</a>
+        </div>
+      </div>
+
+      <div class="banner-card">
+        <div>
+          <div class="banner-label">Total a pagar este mes</div>
+          <div class="banner-amount" id="total-amount">$0,00</div>
+          <div class="banner-sub"   id="total-detail">Calculando…</div>
+        </div>
+        <button class="btn btn-outline btn-lg"
+                style="color:#fff;border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.12);"
+                onclick="goTab('pagar')">
+          💳 Pagar ahora
+        </button>
+      </div>
+
+      <div class="grid3" id="service-cards"></div>
+
+      <div class="card">
+        <div class="card-title">⚡ Actividad reciente</div>
+        <div id="recent-activity">
+          <div class="text-muted" style="padding:8px 0">Aún no hay pagos registrados.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PAGAR ── -->
+    <div class="page" id="page-pagar">
+      <div class="page-header">
+        <h1>Pagar servicios</h1>
+        <p>Seleccioná los servicios y completá el pago en 3 pasos</p>
+      </div>
+
+      <div class="step-indicator" id="step-indicator">
+        <div class="step-item active" id="step-item-1">
+          <div class="step-dot">1</div><span>Selección</span>
+        </div>
+        <div class="step-connector" id="step-conn-1"></div>
+        <div class="step-item" id="step-item-2">
+          <div class="step-dot">2</div><span>Pago</span>
+        </div>
+        <div class="step-connector" id="step-conn-2"></div>
+        <div class="step-item" id="step-item-3">
+          <div class="step-dot">3</div><span>Confirmar</span>
+        </div>
+      </div>
+
+      <div id="pagar-step1">
+        <div class="card">
+          <div class="card-title">🧾 Seleccioná lo que querés pagar</div>
+          <div id="pagar-services-list"></div>
+          <hr class="divider">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+            <div>
+              <div class="text-muted" style="font-size:12px">Total seleccionado</div>
+              <div style="font-size:26px;font-weight:800;letter-spacing:-.02em" id="pagar-total-selected">$0,00</div>
+            </div>
+            <button class="btn btn-primary btn-lg" onclick="goStep(2)">Continuar →</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="pagar-step2" style="display:none">
+        <div class="card">
+          <div class="card-title">💳 Método de pago</div>
+          <div class="grid2" style="margin-bottom:20px">
+            <div class="field"><label>Nombre en la tarjeta</label>
+              <input id="pay-name" placeholder="Como aparece en la tarjeta"/></div>
+            <div class="field"><label>Número de tarjeta</label>
+              <input id="pay-card" maxlength="19" placeholder="0000 0000 0000 0000"/></div>
+            <div class="field"><label>Vencimiento</label>
+              <input id="pay-exp" placeholder="MM/AA"/></div>
+            <div class="field"><label>CVV</label>
+              <input id="pay-cvv" maxlength="4" placeholder="000" type="password"/></div>
+          </div>
+          <div class="privacy-note">
+            🔒 Tu información viaja cifrada con TLS 1.3. HogarPay no almacena datos de tarjeta.
+          </div>
+          <hr class="divider">
+          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-outline" onclick="goStep(1)">← Volver</button>
+            <button class="btn btn-primary" onclick="goStep(3)">Revisar pago →</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="pagar-step3" style="display:none">
+        <div class="card">
+          <div class="card-title">✅ Confirmá tu pago</div>
+          <div id="confirm-detail"></div>
+          <hr class="divider">
+          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+            <button class="btn btn-outline" onclick="goStep(2)">← Volver</button>
+            <div style="text-align:right">
+              <div class="text-muted" style="font-size:12px;margin-bottom:4px">Total a debitar</div>
+              <div style="font-size:26px;font-weight:800;color:var(--accent);letter-spacing:-.02em"
+                   id="confirm-total">$0,00</div>
+            </div>
+            <button class="btn btn-success btn-lg" id="btn-confirmar-pago" onclick="confirmarPago()">
+              💳 Confirmar pago
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── COMPROBANTES ── -->
+    <div class="page" id="page-comprobantes">
+      <div class="page-header">
+        <h1>Mis Comprobantes</h1>
+        <p>Historial de pagos · Descarga en PDF</p>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;
+                    flex-wrap:wrap;gap:12px;margin-bottom:16px">
+          <div class="card-title" style="margin:0">📄 Historial de pagos</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <select id="filter-year" class="btn btn-outline btn-sm"
+                    onchange="renderReceipts()" style="cursor:pointer">
+              <option>2026</option><option>2025</option><option>2024</option>
+            </select>
+            <select id="filter-service" class="btn btn-outline btn-sm"
+                    onchange="renderReceipts()" style="cursor:pointer">
+              <option value="">Todos</option>
+              <option value="Luz">⚡ Luz</option>
+              <option value="Agua">💧 Agua</option>
+              <option value="Gas">🔥 Gas</option>
+            </select>
+          </div>
+        </div>
+        <div class="privacy-note" style="margin-bottom:16px">
+          🔒 Solo vos podés ver tus comprobantes (Ley 25.326). Retención: 5 años.
+        </div>
+        <div id="receipts-container">
+          <div class="text-muted">No hay comprobantes aún.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RANKING ── -->
+    <div class="page" id="page-ranking">
+      <div class="page-header">
+        <h1>Ranking barrial</h1>
+        <p>Compará tu consumo eléctrico con vecinos de forma anónima</p>
+      </div>
+      <div class="alert alert-info">
+        <span>ℹ️</span>
+        <div>
+          <b>Tu privacidad está protegida.</b> Solo se muestran <b>alias anónimos</b>.
+          Tu participación es voluntaria —
+          <a href="#" onclick="goTab('config');return false" style="color:inherit">configurar en Mi cuenta</a>.
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">🏆 Ranking de luz · <span id="ranking-mes" style="font-weight:500;color:var(--muted)"></span></div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Barrio: <b id="ranking-zona">—</b></div>
+          <div id="ranking-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📊 Tu posición</div>
+          <div id="mi-posicion-card"></div>
+          <hr class="divider">
+          <div class="card-title" style="font-size:12px;color:var(--muted);margin-bottom:8px">
+            💡 Tips para consumir menos
+          </div>
+          <ul style="font-size:13px;line-height:2.1;padding-left:18px;color:var(--ink2)">
+            <li>Reemplazá las lámparas por LED</li>
+            <li>Apagá los equipos en desuso</li>
+            <li>Evitá el modo <em>standby</em></li>
+            <li>Usá el lavarropas con carga completa</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MI CUENTA ── -->
+    <div class="page" id="page-config">
+      <div class="page-header">
+        <h1>Mi cuenta</h1>
+        <p>Gestioná tu perfil, números de cliente y preferencias</p>
+      </div>
+      <div class="grid2">
+        <div>
+          <div class="card">
+            <div class="card-title">👤 Datos personales</div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div class="field"><label>Nombre completo</label>
+                <input id="cfg-name" placeholder="Tu nombre"/></div>
+              <div class="field"><label>Email</label>
+                <input id="cfg-email" type="email" placeholder="tu@email.com"/></div>
+              <div class="field"><label>Teléfono</label>
+                <input id="cfg-phone" placeholder="+54 9 11 0000-0000"/></div>
+              <div class="field"><label>📍 Barrio / Zona</label>
+                <input id="cfg-zone" placeholder="Ej: Palermo, CABA"/></div>
+              <div class="field"><label>🏷️ Alias en el ranking</label>
+                <input id="cfg-alias" placeholder="Ej: Tigre⚡"/></div>
+              <button class="btn btn-primary btn-sm" style="align-self:flex-start"
+                      onclick="saveProfile()">Guardar cambios</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🔢 Números de cliente</div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div class="field"><label>⚡ Luz (EDESUR)</label>
+                <input id="nc-luz" placeholder="456-7890-2"/></div>
+              <div class="field"><label>💧 Agua (AySA)</label>
+                <input id="nc-agua" placeholder="AGU-112233"/></div>
+              <div class="field"><label>🔥 Gas (Metrogas)</label>
+                <input id="nc-gas" placeholder="GAS-998877"/></div>
+              <button class="btn btn-primary btn-sm" style="align-self:flex-start"
+                      onclick="saveClientNumbers()">Guardar números</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-title">🔔 Alertas</div>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:14px">
+                <input type="checkbox" id="alerta-consumo-gas" checked
+                       onchange="updateAlerts()" style="margin-top:2px"/>
+                <div>
+                  <b>Alerta de consumo anómalo de gas</b><br>
+                  <span class="text-muted" style="font-size:12px">Si el consumo sube más del 40%, te avisamos.</span>
+                </div>
+              </label>
+              <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:14px">
+                <input type="checkbox" id="alerta-vencimiento" checked
+                       onchange="updateAlerts()" style="margin-top:2px"/>
+                <div>
+                  <b>Recordatorio de vencimiento</b><br>
+                  <span class="text-muted" style="font-size:12px">5 días antes del vencimiento de cada servicio.</span>
+                </div>
+              </label>
+              <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:14px">
+                <input type="checkbox" id="alerta-pago" checked
+                       onchange="updateAlerts()" style="margin-top:2px"/>
+                <div>
+                  <b>Confirmación de pago</b><br>
+                  <span class="text-muted" style="font-size:12px">Notificación al confirmar cada pago.</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🏆 Ranking barrial</div>
+            <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;
+                          font-size:14px;margin-bottom:12px">
+              <input type="checkbox" id="ranking-optin" checked
+                     onchange="updateAlerts()" style="margin-top:2px"/>
+              <div>
+                <b>Participar en el ranking del barrio</b><br>
+                <span class="text-muted" style="font-size:12px">Con alias anónimo. Nadie ve tu nombre ni consumo exacto.</span>
+              </div>
+            </label>
+            <div class="privacy-note">
+              🔒 Podés desactivarte en cualquier momento. Ley 25.326.
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🛡️ Seguridad</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="font-size:13px;color:var(--muted)">
+                Sesión iniciada: <b id="session-since">—</b>
+              </div>
+              <button class="btn btn-outline btn-sm" style="align-self:flex-start"
+                      onclick="showToast('Función disponible en la versión final del servidor')">
+                Cambiar contraseña
+              </button>
+              <button class="btn btn-danger btn-sm" style="align-self:flex-start"
+                      onclick="handleLogout()">
+                Cerrar sesión
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div><!-- /app-screen -->
+
+<!-- MODAL Comprobante -->
+<div class="modal-overlay" id="modal-receipt">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>📄 Comprobante de pago</h2>
+      <button class="modal-close" onclick="closeModal('modal-receipt')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-receipt-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('modal-receipt')">Cerrar</button>
+      <button class="btn btn-primary"  onclick="downloadReceiptPDF()">⬇️ Descargar PDF</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="confetti-canvas"></canvas>
+<div class="toast" id="toast"></div>
+
+<!-- Scripts en orden de dependencias -->
+<script src="js/db.js"></script>
+<script src="js/state.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/inicio.js"></script>
+<script src="js/pagar.js"></script>
+<script src="js/comprobantes.js"></script>
+<script src="js/ranking.js"></script>
+<script src="js/app.js"></script>
+
+<!-- Precargar datos de config en la página Mi cuenta al navegar -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // Poblar campos de Mi cuenta cuando se activa la página
+    const origGoTab = goTab;
+    window.goTab = function(name) {
+      origGoTab(name);
+      if (name === "config") {
+        const s = dbGetSession();
+        if (!s) return;
+        document.getElementById("cfg-name").value  = s.name  || "";
+        document.getElementById("cfg-email").value = s.email || "";
+        document.getElementById("cfg-phone").value = s.phone || "";
+        document.getElementById("cfg-zone").value  = s.zone  || "";
+        document.getElementById("cfg-alias").value = s.alias || "";
+        document.getElementById("nc-luz").value    = s.ncLuz  || "";
+        document.getElementById("nc-agua").value   = s.ncAgua || "";
+        document.getElementById("nc-gas").value    = s.ncGas  || "";
+        const zone = document.getElementById("ranking-zona");
+        if (zone) zone.textContent = s.zone || "Buenos Aires";
+        document.getElementById("session-since").textContent = today();
+      }
+    };
+  });
+</script>
+
+</body>
+</html>

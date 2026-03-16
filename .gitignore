@@ -1,0 +1,4 @@
+node_modules/
+hogarpay.db
+*.db-shm
+*.db-wal
